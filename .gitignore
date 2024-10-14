@@ -1,0 +1,12 @@
+# Ignore bin and obj folders
+bin/
+obj/
+
+# Rider IDE specific files
+.idea/
+.idea_modules/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
