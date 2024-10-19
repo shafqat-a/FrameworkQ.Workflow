@@ -1,0 +1,32 @@
+@page
+@model FrameworkQ.Workflow.Test.Pages.Step1
+
+@{
+    ViewData["Title"] = "Step 1 - Please enter your information";
+}
+
+<div class="text-center">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+    <p>
+    
+        <table>
+            <tr>
+                <td>First Name:</td>
+                <td><input type="text" id="first_name" workflow_variable="true"/></td>
+            </tr>
+            <tr>
+                <td>Last Name:</td>
+                <td><input type="text" id="last_name" workflow_variable="true"/></td>
+            </tr>
+            <tr>
+                <td>Email:</td>
+                <td><input type="text" id="email" workflow_variable="true"/></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div id="div_actions"></div></td>
+            </tr>
+        </table>
+
+    </p>
+</div>

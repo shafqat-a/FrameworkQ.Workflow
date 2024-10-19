@@ -1,0 +1,32 @@
+@page
+@model FrameworkQ.Workflow.Test.Pages.Step2
+
+@{
+ViewData["Title"] = "Step 2 - Confirm your information";
+}
+
+<div class="text-center">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+    <p>
+       
+    <table style="width: 500px">
+        <tr>
+        <td colspan="2" >
+            <p>
+                By selecting “I Agree,” I confirm that all the information I have provided on this website is true, accurate, and complete to the best of my knowledge. I understand that providing false or misleading information may result in consequences as outlined in the website’s terms and conditions.
+            </p>
+        </td>
+        <tr>
+            <td colspan="2">
+                <p>Do you agree to the terms?</p>
+                <input type="checkbox" id="agree_terms" name="agree_terms" workflow_variable="true"/> Yes, I do.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div id="div_actions"></div></td>
+        </tr>
+    </table>
+
+    </p>
+</div>

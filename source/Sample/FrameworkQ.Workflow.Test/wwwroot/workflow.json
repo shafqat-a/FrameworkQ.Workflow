@@ -1,0 +1,50 @@
+{
+  "Steps": [
+    {
+      "Name": "Step1",
+      "Variables": [],
+      "Actions":[{"Next":"Workflow_Step1"}]
+    },
+    {
+      "Name": "Step2",
+      "Variables": [],
+      "Actions":[{"Next":"Workflow_Step2"}]
+    },
+    {
+      "Name": "Step3",
+      "Variables": [],
+      "Actions":[
+        {"Restart from Beginning":"Workflow_Step3_Restart"},
+        {"Back":"Workflow_Step3_Back"},
+        {"Complete":"Workflow_Step3_Complete"}
+      ]
+    }
+  ],
+  "Actions": [
+    {
+      "Type": "FrameworkQ.Workflow.Test.Helpers.WorkflowCode, FrameworkQ.Workflow.Test",
+      "Name": "Workflow_Step1",
+      "Validation" : "Validate_Step1"        
+    },
+    {
+      "Type": "FrameworkQ.Workflow.Test.Helpers.WorkflowCode, FrameworkQ.Workflow.Test",
+      "Name": "Workflow_Step2",
+      "Validation" : "Validate_Step1"
+    },
+    {
+      "Type": "FrameworkQ.Workflow.Test.Helpers.WorkflowCode, FrameworkQ.Workflow.Test",
+      "Name": "Workflow_Step3_Complete",
+      "Validation" : "Validate_Step1"
+    },
+    {
+      "Type": "FrameworkQ.Workflow.Test.Helpers.WorkflowCode, FrameworkQ.Workflow.Test",
+      "Name": "Workflow_Step3_Restart",
+      "Validation" : "Validate_Step1"
+    },
+    {
+      "Type": "FrameworkQ.Workflow.Test.Helpers.WorkflowCode, FrameworkQ.Workflow.Test",
+      "Name": "Workflow_Step3_Back",
+      "Validation" : "Validate_Step1"
+    }
+  ]
+}
