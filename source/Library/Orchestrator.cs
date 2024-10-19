@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -12,37 +16,33 @@ public class Orchestrator
         _actionFactory = factory;
     }
     
-    
-    
     public WorkflowContext PrepareWorkflowContext(WorkflowConfiguration config, WorkflowState state)
     {
-        //if (state == null || state.CurrentStep == null || !config.Steps.ContainsKey(state.CurrentStep))
-        
-        
         WorkflowContext context = new WorkflowContext();
-        context.Configuration = config;
-        if (state.CurrentStep != null)
+        if (state.CurrentStepName != null)
         {
-            context.CurrentStep = config.Steps[state.CurrentStep];
+            context.Variables = state.Variables.ToDictionary(entry => entry.Key, entry => entry.Value);
+            context.CurrentStepName = state.CurrentStepName;
+            context.IsWorkflowComplete = state.IsWorkflowComplete;
+            context.WorkflowId = state.WorkflowId;
         }
-
-        context.Variables = state.WorkflowVariables;
         
         return context;
     }
     
     public WorkflowState GetWorkflowState (WorkflowConfiguration config, WorkflowContext context)
     {
-        if (context == null || context.CurrentStep == null || !config.Steps.ContainsKey(context.CurrentStep.Name))
+        if (context == null || context.CurrentStepName == null || !config.Steps.ContainsKey(context.CurrentStepName))
         {
             throw new ArgumentException("Invalid context or configuration.");
         }
         
         WorkflowState state = new WorkflowState
         {
-            WorkflowVariables = context.Variables,
-            CurrentStep = context.CurrentStep.Name,
-            RuntimeVariables = config.Steps[context.CurrentStep.Name].RuntimeVariables
+            CurrentStepName = context.CurrentStepName,
+            Variables = context.Variables.ToDictionary(entry => entry.Key, entry => entry.Value),
+            IsWorkflowComplete = context.IsWorkflowComplete,
+            WorkflowId = context.WorkflowId
         };
         
         return state;
@@ -59,12 +59,9 @@ public class Orchestrator
 
         dynamic config = JsonConvert.DeserializeObject<dynamic>(jsonContent);
         WorkflowConfiguration workflowConfig = new WorkflowConfiguration();
-        workflowConfig.Name = config.Name;
-
         
         LoadActions(config, workflowConfig);
         LoadSteps(config, workflowConfig);
-        //UpdateStepActions(workflowConfig);  
 
         return workflowConfig;
     }
@@ -74,7 +71,12 @@ public class Orchestrator
         foreach (var action in config.Actions)
         {
             ActionConfig act = new ActionConfig();
-            act.Type = Type.GetType(action.Type.ToString());
+            System.Reflection.TypeInfo xtype = Type.GetType(action.Type.ToString());
+            act.Type = new TypeInfo
+            {
+                ClassName = xtype.FullName,
+                AssemblyName = xtype.Assembly.GetName().Name
+            };
             act.MethodName = action.Name.ToString();
             act.ValidationMethodName = action.Validation.ToString();
             workflowConfig.Actions.Add(act.MethodName, act);
@@ -106,10 +108,6 @@ public class Orchestrator
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.Name = step.Name;
             var enumerable = step.Variables;
-            foreach (var variable in enumerable)
-            {
-                workflowStep.Parameters.Add(variable.Name.ToString(), variable.Value.ToString());
-            }
             
             JArray actionsArray = (JArray)step["Actions"];
             foreach (JObject action in actionsArray)
@@ -127,7 +125,7 @@ public class Orchestrator
 
     public string[] GetActionsAvailable(WorkflowConfiguration configuration, WorkflowContext context)
     {
-        if (context == null || context.CurrentStep == null || !configuration.Steps.ContainsKey(context.CurrentStep.Name))
+        if (context == null || context.CurrentStepName == null )
         {
             throw new ArgumentException("Invalid context or configuration.");
         }
@@ -139,10 +137,10 @@ public class Orchestrator
             return actions.ToArray();
         }
         
-        foreach (var actionName in context.CurrentStep.Actions)
+        foreach (var actionName in configuration.Steps[context.CurrentStepName].Actions)
         {
             var actionConfig = configuration.Actions[actionName.Value.MethodName];
-            var validate = _actionFactory.CreateValidation(actionConfig.Type.FullName + "," + actionConfig.Type.Assembly.GetName().Name + "," + actionConfig.ValidationMethodName);
+            var validate = _actionFactory.CreateValidation(actionConfig.Type.ClassName + "," + actionConfig.Type.AssemblyName + "," + actionConfig.ValidationMethodName);
             
             WorkflowAction action = new WorkflowAction();
             action.Name = actionName.Key;
@@ -157,41 +155,42 @@ public class Orchestrator
         return actions.ToArray();
     }
 
-    public bool ExecuteAction(WorkflowConfiguration configuration, WorkflowContext context, string actionVer)
+    public ActionResult ExecuteAction(WorkflowConfiguration configuration, WorkflowContext context, string actionVer)
     {
         if (context.IsWorkflowComplete)
         {
             throw new InvalidOperationException("Workflow is already complete.");
         }
         
-        if (context == null || context.CurrentStep == null || !configuration.Steps.ContainsKey(context.CurrentStep.Name))
+        if (context == null || context.CurrentStepName == null || !configuration.Steps.ContainsKey(context.CurrentStepName))
         {
             throw new ArgumentException("Invalid context or configuration.");
         }
         
-        if (!context.CurrentStep.Actions.ContainsKey(actionVer))
+        if (!configuration.Steps[context.CurrentStepName].Actions.ContainsKey(actionVer))
         {
             throw new ArgumentException("Invalid action.");
         }
         
-        var actionConfig = configuration.Actions[context.CurrentStep.Actions[actionVer].MethodName];
-        var invokeAction = _actionFactory.CreateAction(actionConfig.Type.FullName + "," +
-                                                       actionConfig.Type.Assembly.GetName().Name + "," +
+        var actionConfig = configuration.Actions[configuration.Steps[context.CurrentStepName].Actions[actionVer].MethodName];
+        var invokeAction = _actionFactory.CreateAction(actionConfig.Type.ClassName + "," +
+                                                       actionConfig.Type.AssemblyName + "," +
                                                        actionConfig.MethodName);
         WorkflowAction action = new WorkflowAction();
-        action.Name = context.CurrentStep.Actions[actionVer].MethodName;
+        action.Name = configuration.Steps[context.CurrentStepName].Actions[actionVer].MethodName;
         action.OnActionCall = invokeAction.Invoke;
         ActionResult result = action.Invoke(context);   
+        
         if (result.IsSuccess)
         {
-            context.CurrentStep = configuration.Steps[result.ChangedStep];
+            context.CurrentStepName = configuration.Steps[result.ChangedStep].Name;
         }
         
         if (result.IsWorkflowComplete)
         {
             context.IsWorkflowComplete = true;
         }
-        
-        return !result.IsWorkflowComplete;
+
+        return result;
     }
 }

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace FrameworkQ.Workflow;
 
 public class ActionResult
@@ -5,6 +7,8 @@ public class ActionResult
     public bool IsSuccess { get; set; }
     public bool IsWorkflowComplete { get; set; }
     public string FailureReason { get; set; }
+    
+    public string WorkflowId {get; set;}
 
     public string ChangedStep
     {
