@@ -8,7 +8,7 @@
     {
       "Name": "Step2",
       "Variables": [],
-      "Actions":[{"Next":"Workflow_Step2"}]
+      "Actions":[{"Next":"Workflow_Step2"}, {"Back":"Workflow_Step2_Back"}]
     },
     {
       "Name": "Step3",
@@ -44,6 +44,11 @@
     {
       "Type": "FrameworkQ.Workflow.Test.Helpers.WorkflowCode, FrameworkQ.Workflow.Test",
       "Name": "Workflow_Step3_Back",
+      "Validation" : "Validate_Step1"
+    },
+    {
+      "Type": "FrameworkQ.Workflow.Test.Helpers.WorkflowCode, FrameworkQ.Workflow.Test",
+      "Name": "Workflow_Step2_Back",
       "Validation" : "Validate_Step1"
     }
   ]

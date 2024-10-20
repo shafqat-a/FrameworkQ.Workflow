@@ -132,14 +132,18 @@ function executeAction (action) {
     });
 }
 
-function forwardToWorkflowStep (workflow_id, step_id) {
+function forwardToWorkflowStep (workflow_id) {
     window.setTimeout(function () {
+        //alert("Moving to next " + "/Steps?workflow_id=" + workflow_id);
         window.location.href = "/Steps?workflow_id=" + workflow_id;
-    }, 1000);
+    }, 2000);
 }
 function processExecutionResult (response) {
     if (response.received.isSuccess==true) {
-        forwardToWorkflowStep(response.received.workflowId, response.received.changedStep);        
+        const url = new URL(window.location.href);
+        var workflow_id = url.searchParams.get('workflow_id');
+    
+        forwardToWorkflowStep(workflow_id);        
     } else {
         processExecutionError(response);
     }

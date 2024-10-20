@@ -125,5 +125,15 @@ public class WorkflowCode
         
         return new ActionResult() { IsSuccess = true, ChangedStep = "Step2"};
     }
+    
+    public ActionResult Workflow_Step2_Back(WorkflowContext context, IAction action)
+    {
+        if (!"Step2".Equals(context.CurrentStepName))
+        {
+            return new ActionResult() { IsSuccess = false, FailureReason = "Invalid step" };
+        }
+        
+        return new ActionResult() { IsSuccess = true, ChangedStep = "Step1"};
+    }
 
 }

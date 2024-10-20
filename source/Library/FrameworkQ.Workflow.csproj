@@ -5,8 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
-        <PackageId>FrameworkQ.Workflow.10.14.24.001.Release</PackageId>
-        <Version>1.0.0</Version>
+        <PackageId>FrameworkQ.Workflow</PackageId>
+        <Version>1.0.1</Version>
         <Authors>Shafqat Ahmed</Authors>
         <Company>FrameworkQ</Company>
 
